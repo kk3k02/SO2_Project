@@ -10,7 +10,7 @@
 
 const int WIDTH = 800;
 const int HEIGHT = 480;
-const int NUM_BALLS = 5;
+const int NUM_BALLS = 2;
 const int NUM_BOUNCES = 6;
 
 std::mutex mtx;
@@ -18,7 +18,7 @@ std::mutex mtx;
 std::vector<Ball> balls;
 Rectangle rect(0.0f, 50.0f, 2.0f, 150.0f, 80.0f);
 
-[[noreturn]] void generateBalls() {
+void generateBalls() {
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<float> distribution(1.0, 5.0);
@@ -29,7 +29,7 @@ Rectangle rect(0.0f, 50.0f, 2.0f, 150.0f, 80.0f);
         balls.emplace_back(20, 20, distribution(gen), distribution(gen),
                            colorDistribution(gen), colorDistribution(gen), colorDistribution(gen), NUM_BOUNCES, WIDTH, HEIGHT);
         mtx.unlock();
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000 + rand() % 2000));
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000 + std::uniform_int_distribution<int>(0, 2000)(gen)));
     }
 }
 
@@ -47,7 +47,7 @@ void renderScene(GLFWwindow* window) {
     mtx.unlock();
 
     rect.draw(); // Rysowanie prostokąta
-    rect.move(0.0f, WIDTH - 100.0f); // Przesuwanie prostokąta
+    rect.move(0.0f, WIDTH); // Przesuwanie prostokąta
 
     glfwSwapBuffers(window);
 }
@@ -81,6 +81,7 @@ int main() {
 
         glfwPollEvents();
         if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+
             break;
         }
     }
