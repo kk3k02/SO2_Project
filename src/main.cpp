@@ -10,38 +10,46 @@
 
 const int WIDTH = 800;
 const int HEIGHT = 480;
-const int NUM_BALLS = 10;
-const int NUM_BOUNCES = 6;
+const int NUM_BALLS = 2;
+const int NUM_BOUNCES = 3;
 
 std::mutex mtx;
 
 std::vector<Ball> balls;
+
 Rectangle rect(0.0f, 50.0f, 2.0f, 150.0f, 80.0f);
 
 void generateBalls() {
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_real_distribution<float> distribution(1.0, 5.0);
+    std::uniform_real_distribution<float> distribution_x(0.0, 5.0);
+    std::uniform_real_distribution<float> distribution_y(0.0, 5.0);
     std::uniform_real_distribution<float> colorDistribution(0.0, 1.0);
 
     for (int i = 0; i < NUM_BALLS; i++) {
         mtx.lock();
-        balls.emplace_back(20, 20, distribution(gen), distribution(gen),
+        balls.emplace_back(200, 460, distribution_x(gen), distribution_y(gen),
                            colorDistribution(gen), colorDistribution(gen), colorDistribution(gen), NUM_BOUNCES, WIDTH, HEIGHT);
         mtx.unlock();
+
+        // Random delay
         std::this_thread::sleep_for(std::chrono::milliseconds(1000 + std::uniform_int_distribution<int>(0, 2000)(gen)));
     }
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 }
 
 void renderScene(GLFWwindow* window) {
     glClear(GL_COLOR_BUFFER_BIT);
 
     mtx.lock();
-    for (auto it = balls.begin(); it != balls.end(); ++it) {
+    for (auto it = balls.begin(); it != balls.end();) {
         it->draw();
         it->move();
         if (it->shouldRemove()) {
-            it = balls.erase(it);
+            it = balls.erase(it);  // Usunięcie kulki i uzyskanie iteratora wskazującego na następny element
+        } else {
+            ++it;  // Przesunięcie iteratora tylko wtedy, gdy kulka nie jest usuwana
         }
     }
     mtx.unlock();
@@ -51,6 +59,7 @@ void renderScene(GLFWwindow* window) {
 
     glfwSwapBuffers(window);
 }
+
 
 int main() {
     if (!glfwInit()) {
@@ -85,6 +94,7 @@ int main() {
             break;
         }
     }
+
 
     glfwDestroyWindow(window);
     glfwTerminate();
