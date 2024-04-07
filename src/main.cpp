@@ -10,8 +10,8 @@
 
 const int WIDTH = 800;
 const int HEIGHT = 480;
-const int NUM_BALLS = 2;
-const int NUM_BOUNCES = 3;
+const int NUM_BALLS = 20;
+const int NUM_BOUNCES = 6;
 
 std::mutex mtx;
 
@@ -35,8 +35,6 @@ void generateBalls() {
         // Random delay
         std::this_thread::sleep_for(std::chrono::milliseconds(1000 + std::uniform_int_distribution<int>(0, 2000)(gen)));
     }
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 }
 
 void renderScene(GLFWwindow* window) {
