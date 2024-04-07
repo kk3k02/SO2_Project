@@ -10,7 +10,7 @@
 
 const int WIDTH = 800;
 const int HEIGHT = 480;
-const int NUM_BALLS = 2;
+const int NUM_BALLS = 10;
 const int NUM_BOUNCES = 6;
 
 std::mutex mtx;
@@ -81,12 +81,10 @@ int main() {
 
         glfwPollEvents();
         if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-
+            ballGenerator.detach();
             break;
         }
     }
-
-    ballGenerator.join();
 
     glfwDestroyWindow(window);
     glfwTerminate();
