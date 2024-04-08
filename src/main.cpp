@@ -65,7 +65,7 @@ int main() {
         return -1;
     }
 
-    GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "Bouncing Balls", nullptr, nullptr);
+    GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "Jakub Jakubowicz - Projekt 1", nullptr, nullptr);
     if (!window) {
         glfwTerminate();
         std::cerr << "Failed to create window\n";

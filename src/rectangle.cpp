@@ -17,13 +17,33 @@ void Rectangle::draw() const {
 
 void Rectangle::move(float minX, float maxX) {
     x += vx;
+
     if (x <= minX || x >= maxX - width) {
+
         vx *= -1;
-        // Losowanie nowej prędkości w zakresie od -5.0 do 5.0
+
+        float minSpeed, maxSpeed;
+        if (vx > 0) {
+            minSpeed = 1.0f;
+            maxSpeed = 7.0f;
+        } else {
+            minSpeed = -7.0f;
+            maxSpeed = -1.0f;
+        }
+
         std::random_device rd;
         std::mt19937 gen(rd());
-        std::uniform_real_distribution<float> distribution(-5.0f, 5.0f);
+        std::uniform_real_distribution<float> distribution(minSpeed, maxSpeed);
         vx = distribution(gen);
+
+        if (x <= minX) {
+            x = minX + 1.0f;
+        } else if (x >= maxX - width) {
+            x = maxX - width - 1.0f;
+        }
     }
 }
+
+
+
 
