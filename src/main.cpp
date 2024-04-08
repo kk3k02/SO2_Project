@@ -22,8 +22,8 @@ Rectangle rect(0.0f, 50.0f, 2.0f, 150.0f, 80.0f);
 void generateBalls() {
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_real_distribution<float> distribution_x(0.0, 5.0);
-    std::uniform_real_distribution<float> distribution_y(0.0, 5.0);
+    std::uniform_real_distribution<float> distribution_x(-5.0, 5.0);
+    std::uniform_real_distribution<float> distribution_y(-5.0, 5.0);
     std::uniform_real_distribution<float> colorDistribution(0.0, 1.0);
 
     for (int i = 0; i < NUM_BALLS; i++) {
