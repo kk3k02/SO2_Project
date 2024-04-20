@@ -17,6 +17,8 @@ std::mutex mtx; // Mutex for synchronizing access to the balls vector
 std::vector<Ball> balls; // Vector to hold Ball objects
 Rectangle rect(0.0f, 50.0f, 2.0f, 150.0f, 80.0f); // Create a rectangle object
 
+bool CLOSE_WINDOW = false;
+
 // Function to generate a single ball
 void generateBall() {
     std::random_device rd;
@@ -40,13 +42,23 @@ void generateBall() {
     }
 }
 
+// Function to generate and move the rectangle
+void generateRectangle() {
+    while (!CLOSE_WINDOW) {
+        mtx.lock(); // Lock the mutex before accessing the rectangle object
+        rect.move(0.0f, WIDTH); // Move the rectangle
+        mtx.unlock(); // Unlock the mutex after modifying the rectangle object
+        std::this_thread::sleep_for(std::chrono::milliseconds(10)); // Adjust sleep duration as needed
+    }
+}
+
 // Function to create threads for generating balls
-[[noreturn]] void generateBalls() {
+void generateBalls() {
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<int> distribution(500, 1500); // Random delay from 500 ms to 1500 ms
 
-    while (true) {
+    while (!CLOSE_WINDOW) {
         std::thread t(generateBall); // Create a new thread for each ball
         t.detach(); // Detach the thread
 
@@ -65,8 +77,9 @@ void renderScene(GLFWwindow* window) {
         ball.move();
     }
 
+    mtx.lock(); // Lock the mutex before accessing the rectangle object
     rect.draw(); // Draw the rectangle
-    rect.move(0.0f, WIDTH); // Move the rectangle
+    mtx.unlock(); // Unlock the mutex after modifying the rectangle object
 
     glfwSwapBuffers(window); // Swap the front and back buffers
 }
@@ -87,6 +100,7 @@ int main() {
     glfwMakeContextCurrent(window); // Set the window context
 
     std::thread ballGenerator(generateBalls); // Start a thread to generate balls
+    std::thread rectangleGenerator(generateRectangle); // Start a thread to generate the rectangle
 
     // Main loop
     while (!glfwWindowShouldClose(window)) {
@@ -101,9 +115,11 @@ int main() {
 
         glfwPollEvents(); // Poll for events
 
-        // Join ballGenerator thread and exit the loop if space key is pressed
+        // Join ballGenerator thread and rectangleGenerator thread and exit the loop if space key is pressed
         if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+            CLOSE_WINDOW = true;
             ballGenerator.join(); // Join the ballGenerator thread
+            rectangleGenerator.join(); // Join the rectangleGenerator thread
             break; // Exit the loop
         }
     }
