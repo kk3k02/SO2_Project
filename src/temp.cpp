@@ -26,10 +26,9 @@ void generateBall() {
     std::uniform_real_distribution<float> distribution_y(-5.0, 5.0);
     std::uniform_real_distribution<float> colorDistribution(0.0, 1.0);
 
-    mtx.lock(); // Lock the mutex before accessing the balls vector
+    // Create a new ball
     Ball ball(200, 460, distribution_x(gen), distribution_y(gen),
               colorDistribution(gen), colorDistribution(gen), colorDistribution(gen), NUM_BOUNCES, WIDTH, HEIGHT);
-    mtx.unlock(); // Unlock the mutex after modifying the balls vector
 
     // Run the ball simulation until it should be removed
     while (!ball.shouldRemove()) {
@@ -51,17 +50,6 @@ void generateBalls() {
 // Function to render the scene
 void renderScene(GLFWwindow* window) {
     glClear(GL_COLOR_BUFFER_BIT); // Clear the color buffer
-
-    mtx.lock(); // Lock the mutex before accessing the balls vector
-    for (auto it = balls.begin(); it != balls.end();) {
-        it->draw(); // Draw the ball
-        if (it->shouldRemove()) {
-            it = balls.erase(it);  // Remove the ball if it should be removed and get the iterator to the next element
-        } else {
-            ++it;  // Move the iterator only if the ball is not being removed
-        }
-    }
-    mtx.unlock(); // Unlock the mutex after modifying the balls vector
 
     rect.draw(); // Draw the rectangle
     rect.move(0.0f, WIDTH); // Move the rectangle
