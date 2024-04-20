@@ -1,6 +1,7 @@
 #include "ball.h"
 #include <cmath>
 
+// Constructor to initialize Ball object with given parameters
 Ball::Ball(float x, float y, float vx, float vy, float r, float g, float b, int num_bounces, int screen_width, int screen_height) :
         x(x), y(y), vx(vx), vy(vy), r(r), g(g), b(b), num_bounces(0), max_bounces(num_bounces), width(screen_width), height(screen_height) {}
 

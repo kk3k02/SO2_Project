@@ -10,31 +10,48 @@
 
 const int WIDTH = 800;
 const int HEIGHT = 480;
-const int NUM_BALLS = 20; // Number of balls to generate
 const int NUM_BOUNCES = 6; // Number of bounces before a ball disappears
 
 std::mutex mtx; // Mutex for synchronizing access to the balls vector
 
-std::vector<Ball> balls; // Vector to hold the balls
-
+std::vector<Ball> balls; // Vector to hold Ball objects
 Rectangle rect(0.0f, 50.0f, 2.0f, 150.0f, 80.0f); // Create a rectangle object
 
-// Function to generate balls
-void generateBalls() {
+// Function to generate a single ball
+void generateBall() {
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<float> distribution_x(-5.0, 5.0);
     std::uniform_real_distribution<float> distribution_y(-5.0, 5.0);
     std::uniform_real_distribution<float> colorDistribution(0.0, 1.0);
 
-    for (int i = 0; i < NUM_BALLS; i++) {
-        mtx.lock(); // Lock the mutex before accessing the balls vector
-        balls.emplace_back(200, 460, distribution_x(gen), distribution_y(gen),
-                           colorDistribution(gen), colorDistribution(gen), colorDistribution(gen), NUM_BOUNCES, WIDTH, HEIGHT);
-        mtx.unlock(); // Unlock the mutex after modifying the balls vector
+    // Create a new ball
+    Ball ball(200, 460, distribution_x(gen), distribution_y(gen),
+              colorDistribution(gen), colorDistribution(gen), colorDistribution(gen), NUM_BOUNCES, WIDTH, HEIGHT);
 
-        // Random delay before generating the next ball
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000 + std::uniform_int_distribution<int>(0, 2000)(gen)));
+    // Add the ball to the vector
+    mtx.lock(); // Lock the mutex before accessing the balls vector
+    balls.push_back(ball);
+    mtx.unlock(); // Unlock the mutex after modifying the balls vector
+
+    // Run the ball simulation until it should be removed
+    while (!ball.shouldRemove()) {
+        ball.move(); // Move the ball
+    }
+}
+
+// Function to create threads for generating balls
+[[noreturn]] void generateBalls() {
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<int> distribution(500, 1500); // Random delay from 500 ms to 1500 ms
+
+    while (true) {
+        std::thread t(generateBall); // Create a new thread for each ball
+        t.detach(); // Detach the thread
+
+        int delay = distribution(gen); // Random delay
+        std::this_thread::sleep_for(std::chrono::milliseconds(delay)); // Sleep with random delay
     }
 }
 
@@ -42,17 +59,11 @@ void generateBalls() {
 void renderScene(GLFWwindow* window) {
     glClear(GL_COLOR_BUFFER_BIT); // Clear the color buffer
 
-    mtx.lock(); // Lock the mutex before accessing the balls vector
-    for (auto it = balls.begin(); it != balls.end();) {
-        it->draw(); // Draw the ball
-        it->move(); // Move the ball
-        if (it->shouldRemove()) {
-            it = balls.erase(it);  // Remove the ball if it should be removed and get the iterator to the next element
-        } else {
-            ++it;  // Move the iterator only if the ball is not being removed
-        }
+    // Draw and move all balls
+    for (auto& ball : balls) {
+        ball.draw();
+        ball.move();
     }
-    mtx.unlock(); // Unlock the mutex after modifying the balls vector
 
     rect.draw(); // Draw the rectangle
     rect.move(0.0f, WIDTH); // Move the rectangle
@@ -90,17 +101,11 @@ int main() {
 
         glfwPollEvents(); // Poll for events
 
-        // Detach ballGenerator thread and exit the loop if space key is pressed
+        // Join ballGenerator thread and exit the loop if space key is pressed
         if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-            ballGenerator.detach(); // Detach the ballGenerator thread
+            ballGenerator.join(); // Join the ballGenerator thread
             break; // Exit the loop
         }
-    }
-
-// Check if the ballGenerator thread is joinable, meaning it is not already joined or detached
-    if (ballGenerator.joinable()) {
-        // If the ballGenerator thread is joinable, detach it before closing program
-        ballGenerator.detach();
     }
 
     glfwDestroyWindow(window); // Destroy the window
