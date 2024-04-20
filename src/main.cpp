@@ -17,7 +17,7 @@ std::mutex mtx; // Mutex for synchronizing access to the balls vector
 std::vector<Ball> balls; // Vector to hold Ball objects
 Rectangle rect(0.0f, 50.0f, 2.0f, 150.0f, 80.0f); // Create a rectangle object
 
-bool CLOSE_WINDOW = false;
+bool CLOSE_WINDOW = false; // Flag to indicate whether the window should close
 
 // Function to generate a single ball
 void generateBall() {
@@ -117,7 +117,7 @@ int main() {
 
         // Join ballGenerator thread and rectangleGenerator thread and exit the loop if space key is pressed
         if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-            CLOSE_WINDOW = true;
+            CLOSE_WINDOW = true; // Set the flag to close the window
             ballGenerator.join(); // Join the ballGenerator thread
             rectangleGenerator.join(); // Join the rectangleGenerator thread
             break; // Exit the loop
