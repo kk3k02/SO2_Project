@@ -35,11 +35,6 @@ void generateBall() {
     mtx.lock(); // Lock the mutex before accessing the balls vector
     balls.push_back(ball);
     mtx.unlock(); // Unlock the mutex after modifying the balls vector
-
-    // Run the ball simulation until it should be removed
-    while (!ball.shouldRemove()) {
-        ball.move(); // Move the ball
-    }
 }
 
 // Function to generate and move the rectangle
@@ -73,8 +68,11 @@ void renderScene(GLFWwindow* window) {
 
     // Draw and move all balls
     for (auto& ball : balls) {
-        ball.draw();
-        ball.move();
+        // Run the ball simulation until it should be removed
+        if (!ball.shouldRemove()){
+            ball.draw();
+            ball.move();
+        }
     }
 
     mtx.lock(); // Lock the mutex before accessing the rectangle object
