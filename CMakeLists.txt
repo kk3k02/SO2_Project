@@ -4,8 +4,6 @@ project(Projekt_1)
 set(CMAKE_CXX_STANDARD 17)
 
 add_executable(Projekt_1
-        src/glad.c
-        src/glad.h
         src/main.cpp
         src/ball.cpp
         src/ball.h

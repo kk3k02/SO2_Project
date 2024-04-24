@@ -26,6 +26,7 @@ public:
 
     // Function to check if the Ball object should be removed
     [[nodiscard]] bool shouldRemove() const;
+
 };
 
 #endif

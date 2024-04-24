@@ -1,10 +1,11 @@
 #include <iostream>
 #include <thread>
-#include <vector>
+#include <list> // Include list header
 #include <random>
 #include <chrono>
 #include <mutex>
 #include <GLFW/glfw3.h>
+#include <algorithm>
 #include "ball.h"
 #include "rectangle.h"
 
@@ -12,9 +13,9 @@ const int WIDTH = 800;
 const int HEIGHT = 480;
 const int NUM_BOUNCES = 6; // Number of bounces before a ball disappears
 
-std::mutex mtx; // Mutex for synchronizing access to the balls vector
+std::mutex mtx; // Mutex for synchronizing access to the balls list
 
-std::vector<Ball> balls; // Vector to hold Ball objects
+std::list<Ball*> ballPointers; // List to hold pointers to Ball objects
 Rectangle rect(0.0f, 50.0f, 2.0f, 150.0f, 80.0f); // Create a rectangle object
 
 bool CLOSE_WINDOW = false; // Flag to indicate whether the window should close
@@ -28,23 +29,23 @@ void generateBall() {
     std::uniform_real_distribution<float> colorDistribution(0.0, 1.0);
 
     // Create a new ball
-    Ball ball(200, 460, distribution_x(gen), distribution_y(gen),
-              colorDistribution(gen), colorDistribution(gen), colorDistribution(gen), NUM_BOUNCES, WIDTH, HEIGHT);
+    Ball* ball = new Ball(200, 460, distribution_x(gen), distribution_y(gen),
+                          colorDistribution(gen), colorDistribution(gen), colorDistribution(gen), NUM_BOUNCES, WIDTH, HEIGHT);
 
-    // Add the ball to the vector
-    mtx.lock(); // Lock the mutex before accessing the balls vector
-    balls.push_back(ball);
-    mtx.unlock(); // Unlock the mutex after modifying the balls vector
-}
+    mtx.lock(); // Lock the mutex before accessing the balls list
+    ballPointers.push_back(ball); // Add the ball pointer to the list
+    mtx.unlock(); // Unlock the mutex after modifying the balls list
 
-// Function to generate and move the rectangle
-void generateRectangle() {
-    while (!CLOSE_WINDOW) {
-        mtx.lock(); // Lock the mutex before accessing the rectangle object
-        rect.move(0.0f, WIDTH); // Move the rectangle
-        mtx.unlock(); // Unlock the mutex after modifying the rectangle object
-        std::this_thread::sleep_for(std::chrono::milliseconds(10)); // Adjust sleep duration as needed
-    }
+    ball->move();
+
+    // Remove the specific ball pointer from the list
+    // This ensures that we don't leak memory
+    std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Wait for some time before removing the ball (adjust as needed)
+    mtx.lock();
+    ballPointers.remove(ball);
+    mtx.unlock();
+
+    delete ball; // Delete the ball object to avoid memory leaks
 }
 
 // Function to create threads for generating balls
@@ -62,18 +63,28 @@ void generateBalls() {
     }
 }
 
+// Function to generate and move the rectangle
+void generateRectangle() {
+    while (!CLOSE_WINDOW) {
+        mtx.lock(); // Lock the mutex before accessing the rectangle object
+        rect.move(0.0f, WIDTH); // Move the rectangle
+        mtx.unlock(); // Unlock the mutex after modifying the rectangle object
+        std::this_thread::sleep_for(std::chrono::milliseconds(10)); // Adjust sleep duration as needed
+    }
+}
+
 // Function to render the scene
 void renderScene(GLFWwindow* window) {
     glClear(GL_COLOR_BUFFER_BIT); // Clear the color buffer
 
     // Draw and move all balls
-    for (auto& ball : balls) {
-        // Run the ball simulation until it should be removed
-        if (!ball.shouldRemove()){
-            ball.draw();
-            ball.move();
-        }
+    mtx.lock();
+    for (auto& ballPtr : ballPointers) {
+        Ball& ball = *ballPtr;
+        //ball.move();
+        ball.draw();
     }
+    mtx.unlock();
 
     mtx.lock(); // Lock the mutex before accessing the rectangle object
     rect.draw(); // Draw the rectangle
@@ -121,6 +132,12 @@ int main() {
             break; // Exit the loop
         }
     }
+
+    // Delete dynamically allocated Ball objects
+    for (auto& ballPtr : ballPointers) {
+        delete ballPtr;
+    }
+    ballPointers.clear(); // Clear the list of ball pointers
 
     glfwDestroyWindow(window); // Destroy the window
     glfwTerminate(); // Terminate GLFW

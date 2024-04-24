@@ -1,5 +1,6 @@
 #include "ball.h"
 #include <cmath>
+#include <thread>
 
 // Constructor to initialize Ball object with given parameters
 Ball::Ball(float x, float y, float vx, float vy, float r, float g, float b, int num_bounces, int screen_width, int screen_height) :
@@ -21,9 +22,12 @@ void Ball::draw() const {
 
 // Function to move the Ball object
 void Ball::move() {
-    x += vx; // Update x-coordinate
-    y += vy; // Update y-coordinate
-    handleCollision(); // Handle collisions
+    while (!shouldRemove()) {
+        x += vx; // Update x-coordinate
+        y += vy; // Update y-coordinate
+        handleCollision(); // Handle collisions
+        std::this_thread::sleep_for(std::chrono::milliseconds(10)); // Adjust sleep duration as needed
+    }
 }
 
 // Function to handle collisions with the boundaries of the screen
