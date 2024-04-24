@@ -16,7 +16,7 @@ const int NUM_BOUNCES = 6; // Number of bounces before a ball disappears
 std::mutex mtx; // Mutex for synchronizing access to the balls list
 
 std::list<Ball*> ballPointers; // List to hold pointers to Ball objects
-Rectangle rect(0.0f, 50.0f, 2.0f, 150.0f, 80.0f); // Create a rectangle object
+Rectangle rect(0.0f, 50.0f, 2.0f, 150.0f, 80.0f, 0.0f, WIDTH); // Create a rectangle object
 
 bool CLOSE_WINDOW = false; // Flag to indicate whether the window should close
 
@@ -66,9 +66,7 @@ void generateBalls() {
 // Function to generate and move the rectangle
 void generateRectangle() {
     while (!CLOSE_WINDOW) {
-        mtx.lock(); // Lock the mutex before accessing the rectangle object
-        rect.move(0.0f, WIDTH); // Move the rectangle
-        mtx.unlock(); // Unlock the mutex after modifying the rectangle object
+        rect.move(); // Move the rectangle
         std::this_thread::sleep_for(std::chrono::milliseconds(10)); // Adjust sleep duration as needed
     }
 }
@@ -78,13 +76,12 @@ void renderScene(GLFWwindow* window) {
     glClear(GL_COLOR_BUFFER_BIT); // Clear the color buffer
 
     // Draw and move all balls
-    mtx.lock();
     for (auto& ballPtr : ballPointers) {
+        mtx.lock();
         Ball& ball = *ballPtr;
-        //ball.move();
         ball.draw();
+        mtx.unlock();
     }
-    mtx.unlock();
 
     mtx.lock(); // Lock the mutex before accessing the rectangle object
     rect.draw(); // Draw the rectangle
@@ -127,6 +124,7 @@ int main() {
         // Join ballGenerator thread and rectangleGenerator thread and exit the loop if space key is pressed
         if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
             CLOSE_WINDOW = true; // Set the flag to close the window
+            Rectangle::stop(); // Break the while loop in rectangle
             ballGenerator.join(); // Join the ballGenerator thread
             rectangleGenerator.join(); // Join the rectangleGenerator thread
             break; // Exit the loop
