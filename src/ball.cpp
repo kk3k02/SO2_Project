@@ -32,6 +32,7 @@ void Ball::move() {
 
 // Function to handle collisions with the boundaries of the screen
 void Ball::handleCollision() {
+    // TODO
     if (x <= 10 || x >= (float)(width) - 10) { // Check collision with left or right boundary
         vx *= -1; // Reverse horizontal velocity
         num_bounces++; // Increment bounce count

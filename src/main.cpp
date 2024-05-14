@@ -39,8 +39,7 @@ void generateBall() {
     ball->move();
 
     // Remove the specific ball pointer from the list
-    // This ensures that we don't leak memory
-    std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Wait for some time before removing the ball (adjust as needed)
+    std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Wait for some time before removing the ball
     mtx.lock();
     ballPointers.remove(ball);
     mtx.unlock();
@@ -56,7 +55,8 @@ void generateBalls() {
 
     while (!CLOSE_WINDOW) {
         std::thread t(generateBall); // Create a new thread for each ball
-        t.detach(); // Detach the thread
+//TODO
+        t.join(); // Detach the thread
 
         int delay = distribution(gen); // Random delay
         std::this_thread::sleep_for(std::chrono::milliseconds(delay)); // Sleep with random delay
@@ -65,10 +65,7 @@ void generateBalls() {
 
 // Function to generate and move the rectangle
 void generateRectangle() {
-    while (!CLOSE_WINDOW) {
-        rect.move(); // Move the rectangle
-        std::this_thread::sleep_for(std::chrono::milliseconds(10)); // Adjust sleep duration as needed
-    }
+    rect.move(); // Move the rectangle
 }
 
 // Function to render the scene
