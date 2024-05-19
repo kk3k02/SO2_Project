@@ -7,13 +7,14 @@ class Ball {
 private:
     float x, y; // Position of the ball
     float vx, vy; // Velocity of the ball
+    float radius; // Radius of the ball
     int num_bounces; // Number of bounces
     int max_bounces; // Maximum number of bounces allowed
     int width, height; // Screen width and height
     float r, g, b; // Color of the ball
 
 public:
-    Ball(float x, float y, float vx, float vy, float r, float g, float b, int num_bounces, int screen_width, int screen_height);
+    Ball(float radius, float x, float y, float vx, float vy, float r, float g, float b, int num_bounces, int screen_width, int screen_height);
 
     // Function to draw the Ball object
     void draw() const;

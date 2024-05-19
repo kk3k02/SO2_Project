@@ -18,6 +18,7 @@ std::mutex mtx; // Mutex for synchronizing access to the balls list
 std::list<Ball*> ballPointers; // List to hold pointers to Ball objects
 std::vector<std::thread> threads;
 Rectangle rect(0.0f, 50.0f, 2.0f, 150.0f, 80.0f, 0.0f, WIDTH); // Create a rectangle object
+float radius = 10; // Radius of the ball
 
 bool CLOSE_WINDOW = false; // Flag to indicate whether the window should close
 
@@ -30,7 +31,7 @@ void generateBall() {
     std::uniform_real_distribution<float> colorDistribution(0.0, 1.0);
 
     // Create a new ball
-    Ball* ball = new Ball(200, 460, distribution_x(gen), distribution_y(gen),
+    Ball* ball = new Ball(radius, 200, 460, distribution_x(gen), distribution_y(gen),
                           colorDistribution(gen), colorDistribution(gen), colorDistribution(gen), NUM_BOUNCES, WIDTH, HEIGHT);
 
     mtx.lock(); // Lock the mutex before accessing the balls list
