@@ -2,6 +2,7 @@
 #include <GLFW/glfw3.h> // Include GLFW library for OpenGL
 #include <random> // Include the <random> header for random number generation
 #include <thread>
+#include <iostream>
 
 bool STOP_THREAD = false; // Global flag to control the thread loop
 
@@ -18,6 +19,14 @@ void Rectangle::draw() const {
     glVertex2f(x + width, y + height);
     glVertex2f(x, y + height);
     glEnd();
+
+    // Get the rectangle boundaries and print them
+    std::vector<float> rect = getRect();
+    std::cout << "Rectangle boundaries: "
+              << "xMin: " << rect[0] << ", "
+              << "xMax: " << rect[1] << ", "
+              << "yMin: " << rect[2] << ", "
+              << "yMax: " << rect[3] << std::endl;
 }
 
 // Function to move the Rectangle object
@@ -59,4 +68,9 @@ void Rectangle::move() {
 // Function to stop the Rectangle movement thread
 void Rectangle::stop() {
     STOP_THREAD = true; // Set the global flag to stop the thread
+}
+
+// Function to get the rectangle boundaries
+std::vector<float> Rectangle::getRect() const {
+    return {x, x + width, y, y + height};
 }
