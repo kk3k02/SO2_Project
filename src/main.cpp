@@ -16,6 +16,7 @@ const int NUM_BOUNCES = 6; // Number of bounces before a ball disappears
 std::mutex mtx; // Mutex for synchronizing access to the balls list
 
 std::list<Ball*> ballPointers; // List to hold pointers to Ball objects
+std::vector<std::thread> threads;
 Rectangle rect(0.0f, 50.0f, 2.0f, 150.0f, 80.0f, 0.0f, WIDTH); // Create a rectangle object
 
 bool CLOSE_WINDOW = false; // Flag to indicate whether the window should close
@@ -54,12 +55,17 @@ void generateBalls() {
     std::uniform_int_distribution<int> distribution(500, 1500); // Random delay from 500 ms to 1500 ms
 
     while (!CLOSE_WINDOW) {
-        std::thread t(generateBall); // Create a new thread for each ball
-//TODO
-        t.join(); // Detach the thread
+        threads.emplace_back(generateBall); // Create a new thread for each ball and store it in the vector
 
-        int delay = distribution(gen); // Random delay
-        std::this_thread::sleep_for(std::chrono::milliseconds(delay)); // Sleep with random delay
+        // Sleep for a random duration
+        std::this_thread::sleep_for(std::chrono::milliseconds(distribution(gen)));
+    }
+
+    // Join all threads before exiting
+    for (auto& t : threads) {
+        if (t.joinable()) {
+            t.join();
+        }
     }
 }
 
