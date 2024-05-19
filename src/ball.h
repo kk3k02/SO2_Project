@@ -25,8 +25,9 @@ public:
     void draw() const;
     void move();
     void handleCollision();
-    bool shouldRemove() const;
-    std::vector<float> getBall() const;
+    void unstick();
+    [[nodiscard]] bool shouldRemove() const;
+    [[nodiscard]] std::vector<float> getBall() const;
 };
 
 #endif // BALL_H
