@@ -25,7 +25,7 @@ public:
     static void stop();
 
     // Function to get the rectangle boundaries
-    [[nodiscard]] std::vector<float> getRect() const;
+    std::vector<float> getRect() const;
 };
 
 #endif //PROJEKT_1_RECTANGLE_H

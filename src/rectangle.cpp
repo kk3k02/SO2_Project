@@ -20,13 +20,14 @@ void Rectangle::draw() const {
     glVertex2f(x, y + height);
     glEnd();
 
-    // Get the rectangle boundaries and print them
-    std::vector<float> rect = getRect();
-    std::cout << "Rectangle boundaries: "
-              << "xMin: " << rect[0] << ", "
-              << "xMax: " << rect[1] << ", "
-              << "yMin: " << rect[2] << ", "
-              << "yMax: " << rect[3] << std::endl;
+//    // Get the rectangle boundaries and print them
+//    std::vector<float> rect = getRect();
+//    std::cout << "Rectangle boundaries: "
+//              << "xMin: " << rect[0] << ", "
+//              << "xMax: " << rect[1] << ", "
+//              << "yMin: " << rect[2] << ", "
+//              << "yMax: " << rect[3] << std::endl;
+
 }
 
 // Function to move the Rectangle object
@@ -72,5 +73,5 @@ void Rectangle::stop() {
 
 // Function to get the rectangle boundaries
 std::vector<float> Rectangle::getRect() const {
-    return {x, x + width, y, y + height};
+    return {x, x + width, y, y + height, vx};
 }
