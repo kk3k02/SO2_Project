@@ -1,6 +1,8 @@
 #include "ball.h"
 #include <cmath>
 #include <thread>
+#include <iostream>
+#include <vector>
 
 // Constructor to initialize Ball object with given parameters
 Ball::Ball(float radius, float x, float y, float vx, float vy, float r, float g, float b, int num_bounces, int screen_width, int screen_height) :
@@ -18,6 +20,14 @@ void Ball::draw() const {
         glVertex2f(cx, cy); // Set vertex
     }
     glEnd(); // End drawing
+
+    // Get the rectangle boundaries and print them
+    std::vector<float> ball = getBall();
+    std::cout << "Ball boundaries: "
+              << "xMin: " << ball[0] << ", "
+              << "xMax: " << ball[1] << ", "
+              << "yMin: " << ball[2] << ", "
+              << "yMax: " << ball[3] << std::endl;
 }
 
 // Function to move the Ball object
@@ -46,4 +56,9 @@ void Ball::handleCollision() {
 // Function to check if the Ball object should be removed
 bool Ball::shouldRemove() const {
     return num_bounces >= max_bounces; // Return true if bounce count exceeds maximum num_bounces allowed
+}
+
+// Function to get the ball boundaries
+std::vector<float> Ball::getBall() const {
+    return {x, x + radius, y, y + radius};
 }

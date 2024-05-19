@@ -2,6 +2,7 @@
 #define PROJEKT_1_BALL_H
 
 #include <GLFW/glfw3.h>
+#include <vector>
 
 class Ball {
 private:
@@ -27,6 +28,9 @@ public:
 
     // Function to check if the Ball object should be removed
     [[nodiscard]] bool shouldRemove() const;
+
+    // Function to get the rectangle boundaries
+    [[nodiscard]] std::vector<float> getBall() const;
 
 };
 
