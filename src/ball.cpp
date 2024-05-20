@@ -19,6 +19,14 @@ void Ball::draw() const {
         glVertex2f(cx, cy); // Set vertex
     }
     glEnd(); // End drawing
+
+    // Get the rectangle boundaries and print them
+//    std::vector<float> ball = getBall();
+//    std::cout << "Rectangle boundaries: "
+//              << "xMin: " << ball[0] << ", "
+//              << "xMax: " << ball[1] << ", "
+//              << "yMin: " << ball[2] << ", "
+//              << "yMax: " << ball[3] << std::endl;
 }
 
 void Ball::move() {
@@ -50,59 +58,83 @@ void Ball::handleCollision() {
     std::vector<float> rectangle = re.getRect();
     std::vector<float> ball = getBall();
 
-    if ((ball[1] >= rectangle[0]) && (ball[0] <= rectangle[1]) &&
-        (ball[3] >= rectangle[2]) && (ball[2] <= rectangle[3])) {
+    bool isInsideRectangle = ((x >= (rectangle[0] - radius)) && (x <= (rectangle[1] + radius)) &&
+                              (y >= (rectangle[2] - radius)) && (y <= (rectangle[3] + radius)));
+
+    if (isInsideRectangle) {
         if (!isColliding) {
             isColliding = true;
             start_time = std::chrono::steady_clock::now(); // Reset start time when collision starts
         }
     } else {
-        isColliding = false;  // Ensure ball can stop sticking if it's no longer within rectangle
+        isColliding = false;  // Piłka nie jest przyklejona do prostokąta
 
-        if (x <= 10 || x >= (float)(width) - 10) {
-            vx *= -1; // Reverse horizontal velocity
+        // Sprawdzamy, czy piłka uderzyła w lewą krawędź ekranu
+        if (x <= radius && vx < 0) {
+            x = radius; // Ustawiamy x na minimalną wartość, aby uniknąć wejścia w prostokąt
+            vx *= -1; // Odwracamy kierunek poruszania się piłki w osi x
             num_bounces++;
         }
-        if (y <= 10 || y >= (float)(height) - 10) {
-            vy *= -1; // Reverse vertical velocity
+        // Sprawdzamy, czy piłka uderzyła w prawą krawędź ekranu
+        if (x >= (float)(width) - radius && vx > 0) {
+            x = (float)(width) - radius; // Ustawiamy x na maksymalną wartość, aby uniknąć wejścia w prostokąt
+            vx *= -1; // Odwracamy kierunek poruszania się piłki w osi x
+            num_bounces++;
+        }
+        // Sprawdzamy, czy piłka uderzyła w górną krawędź ekranu
+        if (y <= radius && vy < 0) {
+            y = radius; // Ustawiamy y na minimalną wartość, aby uniknąć wejścia w prostokąt
+            vy *= -1; // Odwracamy kierunek poruszania się piłki w osi y
+            num_bounces++;
+        }
+        // Sprawdzamy, czy piłka uderzyła w dolną krawędź ekranu
+        if (y >= (float)(height) - radius && vy > 0) {
+            y = (float)(height) - radius; // Ustawiamy y na maksymalną wartość, aby uniknąć wejścia w prostokąt
+            vy *= -1; // Odwracamy kierunek poruszania się piłki w osi y
             num_bounces++;
         }
     }
 }
+
 
 bool Ball::shouldRemove() const {
     return num_bounces >= max_bounces; // Check if the ball exceeded the bounce limit
 }
 
 std::vector<float> Ball::getBall() const {
-    return {x, x + 2*radius, y, y + 2*radius}; // Return ball boundaries
+    return {x, x + 2 * radius, float(height) - y, float (height) - (y + 2 * radius)}; // Return ball boundaries
 }
 
 void Ball::unstick() {
     Rectangle re = *rect;
     std::vector<float> rectangle = re.getRect(); // [xMin, xMax, yMin, yMax]
-    std::vector<float> ball = getBall();
 
     // Adjust ball position based on where it was sticking
-    if (ball[2] <= rectangle[3]) { // Ball stuck on top
-        y += 2 * radius; // Move above the rectangle
+    if (y - radius <= rectangle[2] && x - radius <= rectangle[1] && x + radius >= rectangle[0]) { // Ball stuck on top
         vy *= -1;
-    } else if (ball[3] >= rectangle[2]) { // Ball stuck on bottom
+        y -= 2 * radius; // Move above the rectangle
+        std::cout << "top\n";
+    } else if (y + radius >= rectangle[3] && x - radius <= rectangle[1] && x + radius >= rectangle[0]) { // Ball stuck on bottom
+        vy *= -1;
         y += 2 * radius; // Move below the rectangle
-        vy *= -1;
-    } else if (ball[1] > rectangle[1] && ball[0] < rectangle[1]) { // Ball stuck on right
-        x = rectangle[1]; // Move to the right of the rectangle
-        vx = -std::abs(vx); // Ensure moving left
-    } else if (ball[0] < rectangle[0] && ball[1] > rectangle[0]) { // Ball stuck on left
-        x = rectangle[0] - 2 * radius; // Move to the left of the rectangle
-        vx = std::abs(vx); // Ensure moving right
+        std::cout << "bottom\n";
+    } else if (x + radius >= rectangle[1] && y + radius <= rectangle[3] && y - radius >= rectangle[2]) { // Ball stuck on right
+        vx *= -1;
+        x += 2 * radius; // Move to the left of the rectangle
+        y += vy;
+        std::cout << "right\n";
+    } else if (x - radius <= rectangle[0] && y + radius <= rectangle[3] && y - radius >= rectangle[2]) { // Ball stuck on left
+        vx *= -1;
+        x -= 2 * radius; // Move to the right of the rectangle
+        y += vy;
+        std::cout << "left\n";
     }
-
-    // Update ball position to ensure it is clearly outside the rectangle bounds
-    x += vx;
-    y += vy;
 
     // Ensure ball is no longer colliding
     isColliding = false;
 }
+
+
+
+
 

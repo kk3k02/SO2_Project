@@ -75,3 +75,7 @@ void Rectangle::stop() {
 std::vector<float> Rectangle::getRect() const {
     return {x, x + width, y, y + height, vx};
 }
+
+std::vector<float> Rectangle::getScreen() {
+    return {minX, maxX};
+}
