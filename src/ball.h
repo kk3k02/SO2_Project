@@ -22,12 +22,12 @@ private:
 
 public:
     Ball(Rectangle* rectangle, float radius, float x, float y, float vx, float vy, float r, float g, float b, int num_bounces, int screen_width, int screen_height, int stick_duration);
-    void draw() const;
-    void move();
-    void handleCollision();
-    void unstick();
-    [[nodiscard]] bool shouldRemove() const;
-    [[nodiscard]] std::vector<float> getBall() const;
+    void draw() const; // Draw the ball
+    void move(); // Move the ball
+    void handleCollision(); // Handle collision with the rectangle
+    void unstick(); // Unstick the ball from the rectangle
+    [[nodiscard]] bool shouldRemove() const; // Check if the ball should be removed from the scene
+    [[nodiscard]] std::vector<float> getBall() const; // Get ball position and radius
 };
 
 #endif // BALL_H

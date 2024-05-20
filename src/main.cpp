@@ -11,7 +11,7 @@
 
 const int WIDTH = 800;
 const int HEIGHT = 480;
-const int NUM_BOUNCES = 16; // Number of bounces before a ball disappears
+const int NUM_BOUNCES = 6; // Number of bounces before a ball disappears
 
 std::mutex mtx; // Mutex for synchronizing access to the balls list
 
@@ -19,7 +19,7 @@ std::list<Ball*> ballPointers; // List to hold pointers to Ball objects
 std::vector<std::thread> threads;
 Rectangle rect(0.0f, 150.0f, 2.0f, 150.0f, 80.0f, 0.0f, WIDTH); // Create a rectangle object
 float radius = 10; // Radius of the ball
-int stick_duration = 1;
+int stick_duration = 1; // Ball sticking to the rectangle time [s]
 
 bool CLOSE_WINDOW = false; // Flag to indicate whether the window should close
 

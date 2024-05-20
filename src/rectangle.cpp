@@ -1,10 +1,11 @@
 #include "rectangle.h" // Include the header file for the Rectangle class
 #include <GLFW/glfw3.h> // Include GLFW library for OpenGL
 #include <random> // Include the <random> header for random number generation
-#include <thread>
-#include <iostream>
+#include <thread> // Include the <thread> header for multithreading
+#include <iostream> // Include <iostream> for debug printing
 
-bool STOP_THREAD = false; // Global flag to control the thread loop
+// Global flag to control the thread loop
+bool STOP_THREAD = false;
 
 // Constructor definition
 Rectangle::Rectangle(float x, float y, float vx, float width, float height, float minX, float maxX) :
@@ -20,14 +21,13 @@ void Rectangle::draw() const {
     glVertex2f(x, y + height);
     glEnd();
 
-//    // Get the rectangle boundaries and print them
-//    std::vector<float> rect = getRect();
-//    std::cout << "Rectangle boundaries: "
-//              << "xMin: " << rect[0] << ", "
-//              << "xMax: " << rect[1] << ", "
-//              << "yMin: " << rect[2] << ", "
-//              << "yMax: " << rect[3] << std::endl;
-
+    // Uncomment for debugging
+    // std::vector<float> rect = getRect();
+    // std::cout << "Rectangle boundaries: "
+    //           << "xMin: " << rect[0] << ", "
+    //           << "xMax: " << rect[1] << ", "
+    //           << "yMin: " << rect[2] << ", "
+    //           << "yMax: " << rect[3] << std::endl;
 }
 
 // Function to move the Rectangle object
@@ -36,18 +36,10 @@ void Rectangle::move() {
         x += vx; // Update x-coordinate
 
         if (x <= minX || x >= maxX - width) { // Check collision with left or right boundary
-
             vx *= -1; // Reverse direction of movement
 
-            float minSpeed, maxSpeed;
-
-            if (vx > 0) { // If moving to the right
-                minSpeed = 1.0f;
-                maxSpeed = 7.0f;
-            } else { // If moving to the left
-                minSpeed = -7.0f;
-                maxSpeed = -1.0f;
-            }
+            float minSpeed = vx > 0 ? 1.0f : -7.0f; // Minimum speed based on direction
+            float maxSpeed = vx > 0 ? 7.0f : -1.0f; // Maximum speed based on direction
 
             // Generate a random speed within the specified range
             std::random_device rd;
@@ -55,9 +47,10 @@ void Rectangle::move() {
             std::uniform_real_distribution<float> distribution(minSpeed, maxSpeed);
             vx = distribution(gen);
 
-            if (x <= minX) { // If the Rectangle hits the left boundary
+            // Adjust position if Rectangle hits the boundaries
+            if (x <= minX) {
                 x = minX + 1.0f; // Move it slightly inside the window
-            } else if (x >= maxX - width) { // If the Rectangle hits the right boundary
+            } else if (x >= maxX - width) {
                 x = maxX - width - 1.0f; // Move it slightly inside the window
             }
         }
@@ -76,6 +69,7 @@ std::vector<float> Rectangle::getRect() const {
     return {x, x + width, y, y + height, vx};
 }
 
+// Function to get the screen boundaries
 std::vector<float> Rectangle::getScreen() {
     return {minX, maxX};
 }

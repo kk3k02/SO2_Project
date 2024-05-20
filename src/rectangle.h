@@ -11,9 +11,8 @@ private:
     float minX, maxX; // Minimum and maximum x-coordinates
 
 public:
+    // Constructor to initialize the Rectangle object
     Rectangle(float x, float y, float vx, float width, float height, float minX, float maxX);
-
-    // Function for getting area of the Rectangle object
 
     // Function to draw the Rectangle object
     void draw() const;
@@ -27,7 +26,8 @@ public:
     // Function to get the rectangle boundaries
     [[nodiscard]] std::vector<float> getRect() const;
 
+    // Function to get the screen boundaries
     std::vector<float> getScreen();
 };
 
-#endif //PROJEKT_1_RECTANGLE_H
+#endif // PROJEKT_1_RECTANGLE_H
