@@ -17,7 +17,7 @@ std::mutex mtx; // Mutex for synchronizing access to the balls list
 
 std::list<Ball*> ballPointers; // List to hold pointers to Ball objects
 std::vector<std::thread> threads;
-Rectangle rect(0.0f, 50.0f, 2.0f, 150.0f, 80.0f, 0.0f, WIDTH); // Create a rectangle object
+Rectangle rect(0.0f, 70.0f, 2.0f, 150.0f, 80.0f, 0.0f, WIDTH); // Create a rectangle object
 float radius = 10; // Radius of the ball
 int stick_duration = 1;
 

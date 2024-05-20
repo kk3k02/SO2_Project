@@ -75,40 +75,34 @@ bool Ball::shouldRemove() const {
 }
 
 std::vector<float> Ball::getBall() const {
-    return {x - radius, x + radius, y - radius, y + radius}; // Return ball boundaries
+    return {x, x + 2*radius, y, y + 2*radius}; // Return ball boundaries
 }
 
 void Ball::unstick() {
     Rectangle re = *rect;
     std::vector<float> rectangle = re.getRect(); // [xMin, xMax, yMin, yMax]
+    std::vector<float> ball = getBall();
 
-    float ballTop = y - radius;
-    float ballBottom = y + radius;
-    float ballLeft = x - radius;
-    float ballRight = x + radius;
-
-    // Check if the ball is stuck to the top of the rectangle
-    if (ballBottom >= rectangle[2] && ballBottom <= rectangle[3] && ballTop < rectangle[2]) {
-        y += vy; // Move downward
-    }
-        // Check if the ball is stuck to the bottom of the rectangle
-    else if (ballTop <= rectangle[3] && ballTop >= rectangle[2] && ballBottom > rectangle[3]) {
-        vy *= -1; // Reverse the movement
-        y += vy; // Move upward
-    }
-    // Check if the ball is stuck to the right side of the rectangle
-    if (ballLeft <= rectangle[1] && ballLeft >= rectangle[0] && ballRight > rectangle[1] && x < (width - radius)) {
-        x += vx; // Move right
-        y += vy; // Move y
-    }
-        // Check if the ball is stuck to the left side of the rectangle
-    else if (ballRight >= rectangle[0] && ballRight <= rectangle[1] && ballLeft < rectangle[0] && x > radius) {
-        vx *= -1; // Reverse the movement
-        x += vx; // Move left
-        y += vy; // Move y
+    // Adjust ball position based on where it was sticking
+    if (ball[2] <= rectangle[3]) { // Ball stuck on top
+        y += 2 * radius; // Move above the rectangle
+        vy *= -1;
+    } else if (ball[3] >= rectangle[2]) { // Ball stuck on bottom
+        y += 2 * radius; // Move below the rectangle
+        vy *= -1;
+    } else if (ball[1] > rectangle[1] && ball[0] < rectangle[1]) { // Ball stuck on right
+        x = rectangle[1]; // Move to the right of the rectangle
+        vx = -std::abs(vx); // Ensure moving left
+    } else if (ball[0] < rectangle[0] && ball[1] > rectangle[0]) { // Ball stuck on left
+        x = rectangle[0] - 2 * radius; // Move to the left of the rectangle
+        vx = std::abs(vx); // Ensure moving right
     }
 
-    // Adjust position to ensure it's not stuck
+    // Update ball position to ensure it is clearly outside the rectangle bounds
     x += vx;
     y += vy;
+
+    // Ensure ball is no longer colliding
+    isColliding = false;
 }
+
