@@ -51,7 +51,6 @@ void Ball::move() {
 void Ball::handleCollision() {
     Rectangle re = *rect;
     std::vector<float> rectangle = re.getRect();
-    std::vector<float> ball = getBall();
 
     // Check if the ball is inside the rectangle
     bool isInsideRectangle = ((x >= (rectangle[0] - radius)) && (x <= (rectangle[1] + radius)) &&
@@ -92,11 +91,6 @@ void Ball::handleCollision() {
 // Function to check if the ball should be removed (if it exceeded bounce limit)
 bool Ball::shouldRemove() const {
     return num_bounces >= max_bounces;
-}
-
-// Function to get the ball boundaries
-std::vector<float> Ball::getBall() const {
-    return {x, x + 2 * radius, float(height) - y, float(height) - (y + 2 * radius)};
 }
 
 // Function to unstick the ball from the rectangle

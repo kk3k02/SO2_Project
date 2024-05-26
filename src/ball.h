@@ -27,7 +27,6 @@ public:
     void handleCollision(); // Handle collision with the rectangle
     void unstick(); // Unstick the ball from the rectangle
     [[nodiscard]] bool shouldRemove() const; // Check if the ball should be removed from the scene
-    [[nodiscard]] std::vector<float> getBall() const; // Get ball position and radius
 };
 
 #endif // BALL_H
