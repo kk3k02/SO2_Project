@@ -3,9 +3,11 @@
 #include <thread>
 #include <iostream>
 
+extern Rectangle rect;
+
 // Constructor to initialize Ball object with given parameters
-Ball::Ball(Rectangle* rectangle, float radius, float x, float y, float vx, float vy, float r, float g, float b, int num_bounces, int screen_width, int screen_height, int stick_duration) :
-        rect(rectangle), radius(radius), x(x), y(y), vx(vx), vy(vy), r(r), g(g), b(b), num_bounces(0), max_bounces(num_bounces), width(screen_width), height(screen_height), isColliding(false), stick_duration(stick_duration) {
+Ball::Ball(float radius, float x, float y, float vx, float vy, float r, float g, float b, int num_bounces, int screen_width, int screen_height, int stick_duration) :
+        radius(radius), x(x), y(y), vx(vx), vy(vy), r(r), g(g), b(b), num_bounces(0), max_bounces(num_bounces), width(screen_width), height(screen_height), isColliding(false), stick_duration(stick_duration) {
     start_time = std::chrono::steady_clock::now(); // Initialize start_time
 }
 
@@ -29,8 +31,7 @@ void Ball::move() {
             x += vx; // Update x-coordinate
             y += vy; // Update y-coordinate
         } else {
-            Rectangle re = *rect;
-            std::vector<float> rectangle = re.getRect();
+            std::vector<float> rectangle = rect.getRect();
             x += rectangle[4]; // Continue moving with the rectangle's horizontal velocity
 
             auto end_time = std::chrono::steady_clock::now();
@@ -49,8 +50,7 @@ void Ball::move() {
 
 // Function to handle collisions with boundaries and the rectangle
 void Ball::handleCollision() {
-    Rectangle re = *rect;
-    std::vector<float> rectangle = re.getRect();
+    std::vector<float> rectangle = rect.getRect();
 
     // Check if the ball is inside the rectangle
     bool isInsideRectangle = ((x >= (rectangle[0] - radius)) && (x <= (rectangle[1] + radius)) &&
@@ -95,8 +95,7 @@ bool Ball::shouldRemove() const {
 
 // Function to unstick the ball from the rectangle
 void Ball::unstick() {
-    Rectangle re = *rect;
-    std::vector<float> rectangle = re.getRect(); // [xMin, xMax, yMin, yMax]
+    std::vector<float> rectangle = rect.getRect(); // [xMin, xMax, yMin, yMax]
 
     // Declare bool variables for conditions
     bool stuckOnTop = (y - radius <= rectangle[2] && x - radius <= rectangle[1] && x + radius >= rectangle[0]);

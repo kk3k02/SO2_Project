@@ -8,7 +8,6 @@
 
 class Ball {
 private:
-    Rectangle* rect; // Pointer to Rectangle object for handling collisions
     float x, y; // Position of the ball
     float vx, vy; // Velocity of the ball
     float radius; // Radius of the ball
@@ -21,7 +20,7 @@ private:
     int stick_duration; // Duration for the ball to stick to the rectangle in milliseconds
 
 public:
-    Ball(Rectangle* rectangle, float radius, float x, float y, float vx, float vy, float r, float g, float b, int num_bounces, int screen_width, int screen_height, int stick_duration);
+    Ball(float radius, float x, float y, float vx, float vy, float r, float g, float b, int num_bounces, int screen_width, int screen_height, int stick_duration);
     void draw() const; // Draw the ball
     void move(); // Move the ball
     void handleCollision(); // Handle collision with the rectangle

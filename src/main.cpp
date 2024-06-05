@@ -32,7 +32,7 @@ void generateBall() {
     std::uniform_real_distribution<float> colorDistribution(0.0, 1.0);
 
     // Create a new ball
-    Ball* ball = new Ball(&rect, radius, 200, 460, distribution_x(gen), distribution_y(gen),
+    Ball* ball = new Ball(radius, 200, 460, distribution_x(gen), distribution_y(gen),
                           colorDistribution(gen), colorDistribution(gen), colorDistribution(gen), NUM_BOUNCES, WIDTH, HEIGHT, stick_duration);
 
     mtx.lock(); // Lock the mutex before accessing the balls list
