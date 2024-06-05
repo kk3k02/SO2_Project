@@ -33,7 +33,7 @@ void generateBall() {
 
     // Create a new ball
     Ball* ball = new Ball(radius, 200, 460, distribution_x(gen), distribution_y(gen),
-                          colorDistribution(gen), colorDistribution(gen), colorDistribution(gen), NUM_BOUNCES, WIDTH, HEIGHT, stick_duration);
+                          colorDistribution(gen), colorDistribution(gen), colorDistribution(gen), NUM_BOUNCES, stick_duration);
 
     mtx.lock(); // Lock the mutex before accessing the balls list
     ballPointers.push_back(ball); // Add the ball pointer to the list

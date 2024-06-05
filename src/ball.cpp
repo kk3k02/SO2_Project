@@ -6,8 +6,8 @@
 extern Rectangle rect;
 
 // Constructor to initialize Ball object with given parameters
-Ball::Ball(float radius, float x, float y, float vx, float vy, float r, float g, float b, int num_bounces, int screen_width, int screen_height, int stick_duration) :
-        radius(radius), x(x), y(y), vx(vx), vy(vy), r(r), g(g), b(b), num_bounces(0), max_bounces(num_bounces), width(screen_width), height(screen_height), isColliding(false), stick_duration(stick_duration) {
+Ball::Ball(float radius, float x, float y, float vx, float vy, float r, float g, float b, int num_bounces, int stick_duration) :
+        radius(radius), x(x), y(y), vx(vx), vy(vy), r(r), g(g), b(b), num_bounces(0), max_bounces(num_bounces), isColliding(false), stick_duration(stick_duration) {
     start_time = std::chrono::steady_clock::now(); // Initialize start_time
 }
 
@@ -70,8 +70,8 @@ void Ball::handleCollision() {
             vx *= -1; // Reverse x-velocity
             num_bounces++;
         }
-        if (x >= (float)(width) - radius && vx > 0) {
-            x = (float)(width) - radius; // Set x to maximum value to avoid entering the boundary
+        if (x >= (float)(WIDTH) - radius && vx > 0) {
+            x = (float)(WIDTH) - radius; // Set x to maximum value to avoid entering the boundary
             vx *= -1; // Reverse x-velocity
             num_bounces++;
         }
@@ -80,8 +80,8 @@ void Ball::handleCollision() {
             vy *= -1; // Reverse y-velocity
             num_bounces++;
         }
-        if (y >= (float)(height) - radius && vy > 0) {
-            y = (float)(height) - radius; // Set y to maximum value to avoid entering the boundary
+        if (y >= (float)(HEIGHT) - radius && vy > 0) {
+            y = (float)(HEIGHT) - radius; // Set y to maximum value to avoid entering the boundary
             vy *= -1; // Reverse y-velocity
             num_bounces++;
         }
