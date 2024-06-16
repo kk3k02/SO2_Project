@@ -6,12 +6,16 @@
 #include <mutex>
 #include <GLFW/glfw3.h>
 #include <algorithm>
+#include <condition_variable>
 #include "ball.h"
 #include "rectangle.h"
 
 const int WIDTH = 800;
 const int HEIGHT = 480;
 const int NUM_BOUNCES = 6; // Number of bounces before a ball disappears
+
+std::condition_variable cv;
+int sticking_balls = 0; // Counter for balls sticked into the rect
 
 std::mutex mtx; // Mutex for synchronizing access to the balls list
 

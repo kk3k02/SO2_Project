@@ -1,9 +1,13 @@
 #include "ball.h"
 #include <cmath>
 #include <thread>
-#include <iostream>
+#include <condition_variable>
+#include <mutex>
 
 extern Rectangle rect;
+extern int sticking_balls;
+extern std::condition_variable cv;
+extern std::mutex mtx;  // Mutex to be declared globally
 
 // Constructor to initialize Ball object with given parameters
 Ball::Ball(float radius, float x, float y, float vx, float vy, float r, float g, float b, int num_bounces, int stick_duration) :
@@ -48,43 +52,58 @@ void Ball::move() {
     }
 }
 
-// Function to handle collisions with boundaries and the rectangle
-void Ball::handleCollision() {
+bool Ball::isInsideRectangle() const{
     std::vector<float> rectangle = rect.getRect();
 
-    // Check if the ball is inside the rectangle
-    bool isInsideRectangle = ((x >= (rectangle[0] - radius)) && (x <= (rectangle[1] + radius)) &&
-                              (y >= (rectangle[2] - radius)) && (y <= (rectangle[3] + radius)));
+    return (x >= (rectangle[0] - radius)) && (x <= (rectangle[1] + radius)) &&
+           (y >= (rectangle[2] - radius)) && (y <= (rectangle[3] + radius));
+}
 
-    if (isInsideRectangle) {
+// Function to handle collisions with boundaries and the rectangle
+void Ball::handleCollision() {
+    std::unique_lock<std::mutex> lock(mtx);  // Lock the mutex with unique_lock for condition_variable
+
+    if (isInsideRectangle()) {
         if (!isColliding) {
+            cv.wait(lock, []{ return (sticking_balls < 2); });
+            cv.wait(lock, [this]{ return (isInsideRectangle()); });
+
             isColliding = true;
+            sticking_balls++;
             start_time = std::chrono::steady_clock::now(); // Reset start time when collision starts
         }
     } else {
-        isColliding = false; // The ball is not stuck to the rectangle
+        if (isColliding) {
+            isColliding = false;
+            sticking_balls--;
+            cv.notify_all();  // Notify other threads that may be waiting on this condition
+        }
+    }
 
-        // Check for collisions with screen boundaries
-        if (x <= radius && vx < 0) {
-            x = radius; // Set x to minimum value to avoid entering the boundary
-            vx *= -1; // Reverse x-velocity
-            num_bounces++;
-        }
-        if (x >= (float)(WIDTH) - radius && vx > 0) {
-            x = (float)(WIDTH) - radius; // Set x to maximum value to avoid entering the boundary
-            vx *= -1; // Reverse x-velocity
-            num_bounces++;
-        }
-        if (y <= radius && vy < 0) {
-            y = radius; // Set y to minimum value to avoid entering the boundary
-            vy *= -1; // Reverse y-velocity
-            num_bounces++;
-        }
-        if (y >= (float)(HEIGHT) - radius && vy > 0) {
-            y = (float)(HEIGHT) - radius; // Set y to maximum value to avoid entering the boundary
-            vy *= -1; // Reverse y-velocity
-            num_bounces++;
-        }
+    // Collision handling with screen boundaries
+    boundaryCollisionHandling();
+}
+
+void Ball::boundaryCollisionHandling() {
+    if (x <= radius && vx < 0) {
+        x = radius;
+        vx *= -1;
+        num_bounces++;
+    }
+    if (x >= (float)(WIDTH) - radius && vx > 0) {
+        x = (float)(WIDTH) - radius;
+        vx *= -1;
+        num_bounces++;
+    }
+    if (y <= radius && vy < 0) {
+        y = radius;
+        vy *= -1;
+        num_bounces++;
+    }
+    if (y >= (float)(HEIGHT) - radius && vy > 0) {
+        y = (float)(HEIGHT) - radius;
+        vy *= -1;
+        num_bounces++;
     }
 }
 
@@ -96,40 +115,36 @@ bool Ball::shouldRemove() const {
 // Function to unstick the ball from the rectangle
 void Ball::unstick() {
     std::vector<float> rectangle = rect.getRect(); // [xMin, xMax, yMin, yMax]
+    adjustBallPosition((y - radius <= rectangle[2]) && (x - radius <= rectangle[1]) && (x + radius >= rectangle[0]),
+                       (y + radius >= rectangle[3]) && (x - radius <= rectangle[1]) && (x + radius >= rectangle[0]),
+                       (x + radius >= rectangle[1]) && (y - radius >= rectangle[2]) && (y + radius <= rectangle[3]),
+                       (x - radius <= rectangle[0]) && (y - radius >= rectangle[2]) && (y + radius <= rectangle[3]));
 
-    // Declare bool variables for conditions
-    bool stuckOnTop = (y - radius <= rectangle[2] && x - radius <= rectangle[1] && x + radius >= rectangle[0]);
-    bool stuckOnBottom = (y + radius >= rectangle[3] && x - radius <= rectangle[1] && x + radius >= rectangle[0]);
-    bool stuckOnRight = (x + radius >= rectangle[1] && y + radius <= rectangle[3] && y - radius >= rectangle[2]);
-    bool stuckOnLeft = (x - radius <= rectangle[0] && y + radius <= rectangle[3] && y - radius >= rectangle[2]);
+    isColliding = false; // Ensure ball is no longer colliding
+    sticking_balls--;
+    cv.notify_all(); // Notify all waiting threads when a ball is unstuck or the condition changes
+}
 
-    // Adjust ball position based on where it was sticking
-    if (stuckOnBottom && (stuckOnLeft || stuckOnRight)) {
-        stuckOnBottom = false;
-    } else if (stuckOnTop && (stuckOnLeft || stuckOnRight)) {
-        stuckOnTop = false;
+void Ball::adjustBallPosition(bool top, bool bottom, bool right, bool left) {
+    if (bottom && (left || right)) {
+        bottom = false;
+    } else if (top && (left || right)) {
+        top = false;
     }
 
-    if (stuckOnTop) {
+    if (top) {
         vy *= -1;
-        y -= 2 * radius; // Move above the rectangle
-        // std::cout << "top\n"; // Debugging aid
-    } else if (stuckOnBottom) {
+        y -= 2 * radius;
+    } else if (bottom) {
         vy *= -1;
-        y += 2 * radius; // Move below the rectangle
-        // std::cout << "bottom\n"; // Debugging aid
-    } else if (stuckOnRight) {
+        y += 2 * radius;
+    } else if (right) {
         vx *= -1;
-        x += 2 * radius; // Move to the left of the rectangle
+        x += 2 * radius;
         y += vy;
-        // std::cout << "right\n"; // Debugging aid
-    } else if (stuckOnLeft) {
+    } else if (left) {
         vx *= -1;
-        x -= 2 * radius; // Move to the right of the rectangle
+        x -= 2 * radius;
         y += vy;
-        // std::cout << "left\n"; // Debugging aid
     }
-
-    // Ensure ball is no longer colliding
-    isColliding = false;
 }
