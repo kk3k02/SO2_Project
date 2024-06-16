@@ -3,16 +3,24 @@
 #include <thread>
 #include <condition_variable>
 #include <mutex>
+#include <iostream>
+#include <list>
 
 extern Rectangle rect;
 extern int sticking_balls;
 extern std::condition_variable cv;
 extern std::mutex mtx;  // Mutex to be declared globally
+extern std::list<Ball*> ballPointers; // List to hold pointers to Ball objects
+
+std::vector<Ball*> waiting_balls;
+
+int Ball::next_id = 0;
 
 // Constructor to initialize Ball object with given parameters
-Ball::Ball(float radius, float x, float y, float vx, float vy, float r, float g, float b, int num_bounces, int stick_duration) :
-        radius(radius), x(x), y(y), vx(vx), vy(vy), r(r), g(g), b(b), num_bounces(0), max_bounces(num_bounces), isColliding(false), stick_duration(stick_duration) {
+Ball::Ball(float radius, float x, float y, float vx, float vy, float r, float g, float b, int num_bounces, int stick_duration)
+        : radius(radius), x(x), y(y), vx(vx), vy(vy), r(r), g(g), b(b), num_bounces(0), max_bounces(num_bounces), isColliding(false), stick_duration(stick_duration) {
     start_time = std::chrono::steady_clock::now(); // Initialize start_time
+    id = next_id++; // Assign unique id to each ball
 }
 
 // Function to draw the Ball object
@@ -48,11 +56,12 @@ void Ball::move() {
         }
 
         handleCollision(); // Handle collision with boundaries and rectangle
+        cv.notify_all(); // Notify all waiting threads when a ball is unstuck or the condition changes
         std::this_thread::sleep_for(std::chrono::milliseconds(10)); // Sleep to simulate real-time movement
     }
 }
 
-bool Ball::isInsideRectangle() const{
+bool Ball::isInsideRectangle() const {
     std::vector<float> rectangle = rect.getRect();
 
     return (x >= (rectangle[0] - radius)) && (x <= (rectangle[1] + radius)) &&
@@ -65,19 +74,32 @@ void Ball::handleCollision() {
 
     if (isInsideRectangle()) {
         if (!isColliding) {
-            cv.wait(lock, []{ return (sticking_balls < 2); });
-            cv.wait(lock, [this]{ return (isInsideRectangle()); });
+            Ball* current_ball = nullptr; // Initialize current_ball to nullptr
+            for (Ball* ball : ballPointers) {
+                if (ball->getId() == id) {
+                    current_ball = ball;
+                    break;
+                }
+            }
+
+            if (current_ball != nullptr) {
+                waiting_balls.emplace_back(current_ball);
+            }
+
+            cv.wait(lock, [] { return (sticking_balls < 2); });
+            if (!waiting_balls.empty()) {
+                cv.wait(lock, [this, current_ball] { return (current_ball == waiting_balls.front());});
+                cv.wait(lock, [this]{return (isInsideRectangle());});
+
+                waiting_balls.erase(waiting_balls.begin());
+            }
 
             isColliding = true;
             sticking_balls++;
             start_time = std::chrono::steady_clock::now(); // Reset start time when collision starts
         }
     } else {
-        if (isColliding) {
-            isColliding = false;
-            sticking_balls--;
-            cv.notify_all();  // Notify other threads that may be waiting on this condition
-        }
+        isColliding = false;
     }
 
     // Collision handling with screen boundaries
@@ -122,7 +144,6 @@ void Ball::unstick() {
 
     isColliding = false; // Ensure ball is no longer colliding
     sticking_balls--;
-    cv.notify_all(); // Notify all waiting threads when a ball is unstuck or the condition changes
 }
 
 void Ball::adjustBallPosition(bool top, bool bottom, bool right, bool left) {
@@ -147,4 +168,8 @@ void Ball::adjustBallPosition(bool top, bool bottom, bool right, bool left) {
         x -= 2 * radius;
         y += vy;
     }
+}
+
+int Ball::getId() const {
+    return id;
 }

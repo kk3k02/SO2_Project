@@ -10,6 +10,7 @@ extern const int WIDTH, HEIGHT; // Define external variables for screen width an
 
 class Ball {
 private:
+    int id;
     float x, y; // Position of the ball
     float vx, vy; // Velocity of the ball
     float radius; // Radius of the ball
@@ -33,6 +34,8 @@ public:
     void handleCollision(); // Method to handle collision with the rectangle and screen boundaries
     void unstick(); // Method to unstick the ball from the rectangle
     [[nodiscard]] bool shouldRemove() const; // Method to determine if the ball should be removed from the game or scene
+    static int next_id;
+    [[nodiscard]] int getId() const;
 };
 
 #endif // BALL_H
