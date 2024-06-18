@@ -67,6 +67,13 @@ void generateBalls() {
         std::this_thread::sleep_for(std::chrono::milliseconds(distribution(gen)));
     }
 
+//    for (int i=0; i<10; i++) {
+//        threads.emplace_back(generateBall); // Create a new thread for each ball and store it in the vector
+//
+//        // Sleep for a random duration
+//        std::this_thread::sleep_for(std::chrono::milliseconds(distribution(gen)));
+//    }
+
     // Join all threads before exiting
     for (auto& t : threads) {
         if (t.joinable()) {
